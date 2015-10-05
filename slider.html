@@ -1,0 +1,76 @@
+<head>
+<script type="text/javascript" src="http://jsxgraph.uni-bayreuth.de/distrib/jsxgraphcore.js"></script>
+</head>
+<body>
+<input type="button" id="playbutton" value="&#9654 Play" onClick="player();">
+<div id="box" class="jxgbox" style="width:600px; height:400px;"></div>
+<script type="text/javascript">
+
+// first part: sinusoids and sliders
+var board = JXG.JSXGraph.initBoard('box', {boundingbox: [0, 4, 10, -10], axis:true, grid:false,
+    showCopyright:false, showNavigation:false});
+var s = board.create('slider',[[1,-3.5],[5,-3.5],[0,0,5]],{name:"f0"});
+var s1 = board.create('slider',[[1,-4.5],[5,-4.5],[0,0,5]],{name:"fs"});
+
+// original sinusoid fo controled by slider s
+var a = board.create('functiongraph', [
+    function(t) { return 2 * Math.sin(1.5 * s.Value() * t); }
+    ],{strokeColor:'blue',strokeWidth:2});
+// sampled sinusoid fs controled by slider s1
+var b = board.create('functiongraph', [
+    function(t) { return 2 * Math.sin(1.5 * s1.Value() * t); }
+    ],{strokeColor:'grey',strokeWidth:1});
+
+// second part: frequency arrow
+var xaxis = board.create('arrow',[[0,-8],[10,-8]],
+    {strokecolor:"#444",strokeWidth:1,highlight:true,fixed:true});
+var f0 = board.create('segment',[
+    [function(){return 2 * s.Value();},-8],
+    [function(){return 2 * s.Value();},-6]
+    ],{strokecolor:"blue",strokeWidth:2,highlight:false,fixed:true});
+var fs = board.create('segment',[
+    [function(){return 2 * s1.Value();},-8],
+    [function(){return 2 * s1.Value();},-6]
+    ],{strokecolor:"#444",strokeWidth:1,highlight:false,fixed:true});
+var Nyquest = board.create('segment',[[5,-8],[5,-5]
+    ],{strokecolor:"#444",strokeWidth:1,highlight:false,fixed:true,strokeOpacity: 0.6});
+var p0 = board.create('point',[
+    function(){return 2 * s.Value();},-6
+    ],{face:'o', size:2, strokeColor:'red', fillOpacity:0.6, strokeOpacity: 0.6});
+var animate = null;
+
+//    Slider animation:
+//    Through either sliders or demo animation,
+//    when we keep increasing the frequency of the input signal,
+//    allowing it to travel over the Nyquist limit, //
+//    our sampled signal will end up representing a sine wave
+//    which is flipped or reflected about the Nyquist Frequency.
+
+function sliderAnimation() {
+    var sMin = 0;
+    var sMax = 5;
+    var sdiff = sMax - sMin;
+        newval = s.Value() + 0.02;
+    s.position = (newval - sMin) / sdiff;
+    if (s.position > 0.5) s1.position = 1.0 - s.position;
+    if (s.position > 1.0) {
+        s.position = 0.0;
+        s1.position = 0.0;
+    }
+    board.update();
+    animate = setTimeout(sliderAnimation,25);
+};
+
+// activate play buttom
+function player(){
+    if (!animate) {
+        document.getElementById('playbutton').value = ' stop animation ';
+        sliderAnimation();
+    } else {
+        document.getElementById('playbutton').value = ' play animation ';
+        clearTimeout(animate);
+        animate = null;
+    }
+};
+</script>
+</body>
